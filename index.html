@@ -7,7 +7,7 @@
 const supabaseUrl = "https://dqegcpsinhvwtuzzbsoj.supabase.co";
 const supabaseKey = "sb_publishable_jZqQyVLD2ZgVwaIPDkftkA_JyyEa7U3";
 
-window.db = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 console.log("Supabase Connected");
 </script>
@@ -6600,6 +6600,66 @@ function formatDocDisplay(doc){
   if(!name) return '—';
   if(!degree) return escHtml(name);
   return escHtml(name)+', '+escHtml(degree);
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseUrl = "YOUR_SUPABASE_URL";
+const supabaseKey = "YOUR_ANON_KEY";
+
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+async function registerClinic() {
+  const clinicName = document.getElementById("clinicName").value;
+  const adminName = document.getElementById("adminName").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { data: authData, error: authError } =
+    await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+  if (authError) {
+    alert(authError.message);
+    return;
+  }
+
+  const userId = authData.user.id;
+
+  const { data: clinicData, error: clinicError } =
+    await supabase
+      .from("clinics")
+      .insert([
+        { name: clinicName, status: "active" }
+      ])
+      .select()
+      .single();
+
+  if (clinicError) {
+    alert(clinicError.message);
+    return;
+  }
+
+  const { error: userError } =
+    await supabase.from("users").insert([
+      {
+        id: userId,
+        name: adminName,
+        email: email,
+        role: "admin",
+        clinic_id: clinicData.id,
+      },
+    ]);
+
+  if (userError) {
+    alert(userError.message);
+    return;
+  }
+
+  alert("Clinic Registered Successfully 🚀");
 }
 </script>
 </body>
